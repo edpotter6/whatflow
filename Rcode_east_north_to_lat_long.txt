@@ -1,0 +1,34 @@
+# 'dataset' holds the input data for this script
+# Install the 'sf' package if not already installed
+if (!require("sf")) {
+  install.packages("sf")
+}
+
+# Load the 'sf' package
+library(sf)
+
+# 'dataset' is assumed to be the current table in the Power Query Editor
+# Replace 'dataset' with the name of your table if different
+
+# Retrieve the current table as a data frame
+df <- dataset
+
+# Check if the "Easting" and "Northing" columns exist in the table
+if ("Easting" %in% colnames(df) && "Northing" %in% colnames(df)) {
+  # Define the coordinate systems
+  bng_crs <- 27700  # British National Grid
+  lonlat_crs <- 4326  # WGS84 (Longitude/Latitude)
+
+  # Create the geometry column with Point objects
+  df <- st_as_sf(df, coords = c("Easting", "Northing"), crs = bng_crs)
+
+  # Transform the spatial points to Longitude/Latitude
+  df <- st_transform(df, lonlat_crs)
+
+  # Extract the Longitude and Latitude values
+  df$Longitude <- st_coordinates(df)[, "X"]
+  df$Latitude <- st_coordinates(df)[, "Y"]
+}
+
+# Return the modified table as a data frame
+df
